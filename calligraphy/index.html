@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>每日一练 · 书法字帖 · A4 可打印</title>
+<style>
+  @page { size: A4; margin: 0; }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #eef2f7;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ---------- 工具栏 ---------- */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    padding: 11px 20px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .brand {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    margin-right: 2px;
+  }
+  .brand em {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-left: 6px;
+    letter-spacing: .5px;
+  }
+
+  .ctrl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #475569;
+  }
+
+  select, input[type="number"] {
+    height: 30px;
+    padding: 0 8px;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: #0f172a;
+    background: #f8fafc;
+    border: 1px solid #dbe3ec;
+    border-radius: 7px;
+    outline: none;
+    cursor: pointer;
+  }
+  #volume { max-width: 130px; }
+  select:focus, input[type="number"]:focus { border-color: #2563eb; background: #fff; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 76px;
+    height: 22px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: #e3eaf3;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: #2563eb;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, .4);
+  }
+  input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: #e3eaf3;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    border: none;
+    border-radius: 50%;
+    background: #2563eb;
+  }
+  .val {
+    display: inline-block;
+    min-width: 42px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #0f172a;
+  }
+  .sep {
+    width: 1px;
+    height: 18px;
+    background: #e2e8f0;
+    margin: 0 2px;
+  }
+
+  .chk {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #475569;
+    cursor: pointer;
+    user-select: none;
+  }
+  .chk input { width: 14px; height: 14px; accent-color: #2563eb; cursor: pointer; }
+
+  .spacer { flex: 1; }
+
+  button {
+    height: 30px;
+    padding: 0 14px;
+    font-size: 12.5px;
+    font-family: inherit;
+    font-weight: 600;
+    color: #334155;
+    background: #f1f5f9;
+    border: 1px solid #dbe3ec;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: .15s;
+  }
+  button:hover { background: #e6ecf4; }
+  button.primary {
+    color: #fff;
+    background: #2563eb;
+    border-color: #2563eb;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, .3);
+  }
+  button.primary:hover { background: #1d4ed8; }
+  button.on { color: #1d4ed8; background: #e8f0fe; border-color: #bcd2fb; }
+
+  /* ---------- 文字输入面板 ---------- */
+  .composer {
+    display: none;
+    padding: 12px 20px 14px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .composer.open { display: block; }
+  .composer-inner {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    max-width: 1080px;
+  }
+  .composer textarea {
+    flex: 1;
+    min-height: 60px;
+    max-height: 190px;
+    padding: 8px 11px;
+    font-family: "Kaiti SC", "STKaiti", "KaiTi", "BiauKai", serif;
+    font-size: 17px;
+    line-height: 1.85;
+    letter-spacing: 2px;
+    color: #0f172a;
+    background: #f8fafc;
+    border: 1px solid #dbe3ec;
+    border-radius: 8px;
+    outline: none;
+    resize: vertical;
+  }
+  .composer textarea:focus { border-color: #2563eb; background: #fff; }
+  .composer-side {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    min-width: 156px;
+    font-size: 11.5px;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+  .composer-side b { color: #0f172a; font-size: 13px; }
+
+  /* ---------- 纸张 ---------- */
+  #sheets {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 0 70px;
+  }
+
+  .sheet {
+    width: 210mm;
+    height: 296mm;
+    padding: 13mm 15mm 10mm;
+    background: #fff;
+    box-shadow: 0 2px 18px rgba(15, 23, 42, .13);
+    display: flex;
+    flex-direction: column;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .sheet-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 4mm;
+    border-bottom: 1.2pt solid #0f172a;
+    flex: none;
+  }
+  .ttl {
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+  .meta {
+    display: flex;
+    gap: 8mm;
+    font-size: 10pt;
+    color: #475569;
+    white-space: nowrap;
+  }
+  .meta i {
+    display: inline-block;
+    width: 26mm;
+    height: 1em;
+    border-bottom: .8pt solid #94a3b8;
+    vertical-align: baseline;
+    transform: translateY(.4mm);
+    margin-left: 2px;
+  }
+
+  /* ---------- 字格区 ---------- */
+  .rows {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2mm;
+    padding-top: 4.5mm;
+    overflow: hidden;
+  }
+
+  .cblock {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .9mm;
+  }
+
+  .row { display: flex; flex: none; }
+
+  .cell {
+    position: relative;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #c6d4e5;
+    margin-right: -1px;
+    overflow: hidden;
+  }
+  .row .cell:last-child { margin-right: 0; }
+
+  .cell svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+
+  .cell .ch {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-stack, "Kaiti SC", "STKaiti", serif);
+    font-size: var(--fs);
+    line-height: 1;
+    transform: translateY(1%);
+  }
+  .cell.demo .ch { color: #16233a; }
+  .cell.trace .ch { color: var(--trace, rgba(193, 68, 58, .4)); }
+
+  /* 拼音 + 笔顺条 */
+  .bar {
+    display: flex;
+    align-items: flex-end;
+    flex: none;
+    align-self: stretch;
+  }
+  .bar .py {
+    flex: none;
+    text-align: center;
+    font-family: "Helvetica Neue", Arial, "PingFang SC", sans-serif;
+    font-size: var(--py-fs);
+    line-height: 1;
+    color: #5f7189;
+    padding-bottom: .4mm;
+    letter-spacing: .3px;
+    white-space: nowrap;
+  }
+  .bar .strokes {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--st-gap);
+    margin-left: .8mm;
+    overflow: hidden;
+  }
+  .bar .st { flex: none; }
+  .bar .st svg { display: block; width: 100%; height: 100%; }
+
+  /* 字体 */
+  body.font-kai      { --font-stack: "Kaiti SC", "STKaiti", "KaiTi", "Kaiti TC", "BiauKai", "Songti SC", serif; }
+  body.font-song     { --font-stack: "Songti SC", "STSong", "SimSun", "Songti TC", serif; }
+  body.font-hei      { --font-stack: "PingFang SC", "Heiti SC", "Microsoft YaHei", system-ui, sans-serif; }
+  body.font-fangson  { --font-stack: "STFangsong", "Fangsong SC", "Songti SC", serif; }
+
+  /* 空心描红 */
+  body.style-outline .cell.trace .ch {
+    color: transparent;
+    -webkit-text-stroke: var(--sw) var(--trace);
+  }
+
+  /* 隐藏格子线：只留外框 */
+  body.no-grid .cell svg { display: none; }
+
+  .sheet-foot {
+    flex: none;
+    height: 7.5mm;
+    padding-top: 3mm;
+    line-height: 1;
+    font-size: 8.5pt;
+    color: #94a3b8;
+    text-align: center;
+    letter-spacing: .5px;
+  }
+
+  /* ---------- 打印 ---------- */
+  @media print {
+    body { background: #fff; }
+    .toolbar, .composer { display: none !important; }
+    #sheets { padding: 0; gap: 0; }
+    .sheet { box-shadow: none; margin: 0; }
+    .sheet:last-child { page-break-after: auto; break-after: auto; }
+  }
+
+  @media (max-width: 900px) {
+    body { overflow-x: auto; }
+    .toolbar { padding: 10px 16px; }
+    #sheets { align-items: flex-start; padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body class="font-kai" style="--trace: rgba(193,68,58,.4)">
+
+<div class="toolbar">
+  <div class="brand">每日一练 · 书法字帖 <em>A4 可打印</em></div>
+
+  <label class="ctrl">册次
+    <select id="volume"></select>
+  </label>
+
+  <label class="ctrl">每次
+    <select id="limit">
+      <option value="6">6 字</option>
+      <option value="8">8 字</option>
+      <option value="10" selected>10 字</option>
+      <option value="12">12 字</option>
+      <option value="16">16 字</option>
+      <option value="0">整册</option>
+    </select>
+  </label>
+
+  <div class="sep"></div>
+
+  <label class="ctrl">每行格数
+    <select id="cols">
+      <option value="6">6 格</option>
+      <option value="8">8 格</option>
+      <option value="10" selected>10 格</option>
+      <option value="12">12 格</option>
+    </select>
+  </label>
+
+  <label class="ctrl">每页行数
+    <select id="rowsPer">
+      <option value="6">6 行</option>
+      <option value="7">7 行</option>
+      <option value="8">8 行</option>
+      <option value="9">9 行</option>
+      <option value="10" selected>10 行</option>
+      <option value="11">11 行</option>
+      <option value="12">12 行</option>
+    </select>
+  </label>
+
+  <label class="ctrl">每字行数
+    <select id="reps">
+      <option value="1" selected>1 行</option>
+      <option value="2">2 行</option>
+      <option value="3">3 行</option>
+    </select>
+  </label>
+
+  <label class="ctrl">描红
+    <select id="trace">
+      <option value="0">不描红</option>
+      <option value="1">1 格</option>
+      <option value="2">2 格</option>
+      <option value="3" selected>3 格</option>
+      <option value="4">4 格</option>
+      <option value="5">5 格</option>
+    </select>
+  </label>
+
+  <label class="ctrl">格子
+    <select id="grid">
+      <option value="tian" selected>田字格</option>
+      <option value="mi">米字格</option>
+      <option value="jiu">九宫格</option>
+      <option value="hui">回宫格</option>
+      <option value="fang">方格</option>
+    </select>
+  </label>
+
+  <label class="ctrl">字体
+    <select id="font">
+      <option value="kai" selected>楷体</option>
+      <option value="song">宋体</option>
+      <option value="fangson">仿宋</option>
+      <option value="hei">黑体</option>
+    </select>
+  </label>
+
+  <label class="ctrl">描红样式
+    <select id="traceStyle">
+      <option value="solid" selected>实心</option>
+      <option value="outline">空心</option>
+    </select>
+  </label>
+
+  <label class="ctrl">透明度
+    <input type="range" id="opacity" min="15" max="100" step="5" value="40">
+    <span class="val" id="opacityVal">40%</span>
+  </label>
+
+
+  <span class="ctrl">字格 <span class="val" id="cellInfo">18mm · 每页 10 行</span></span>
+
+  <label class="chk"><input type="checkbox" id="usePinyin" checked> 拼音</label>
+  <label class="chk"><input type="checkbox" id="useStrokes" checked> 笔顺</label>
+  <label class="chk"><input type="checkbox" id="showDemo" checked> 范字</label>
+  <label class="chk"><input type="checkbox" id="showGrid" checked> 格线</label>
+  <label class="chk"><input type="checkbox" id="padBlank"> 补空行</label>
+
+  <div class="spacer"></div>
+
+  <button id="editText">文字内容</button>
+  <button id="print" class="primary">打印 / 存 PDF</button>
+</div>
+
+<div class="composer" id="composer">
+  <div class="composer-inner">
+    <textarea id="text" spellcheck="false" placeholder="输入要练习的字。标点、空格会自动忽略；留空则为空白格纸。"></textarea>
+    <div class="composer-side">
+      <div>全册 <b id="charCount">0</b> 字 · 本次 <b id="charShown">0</b> 字</div>
+      <div id="volumeInfo">—</div>
+    </div>
+  </div>
+</div>
+
+<div id="sheets"></div>
+
+<script src="vendor/pinyin-pro.js"></script>
+<script src="data/shengzi.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const PAGE_W_MM = 210, PAD_X_MM = 15;
+  const CONTENT_W_MM = PAGE_W_MM - PAD_X_MM * 2;   // 180mm
+
+  const VOLUMES = window.SHENGZI || {};
+  const VOLUME_KEYS = Object.keys(VOLUMES);
+
+  const state = {
+    volume: VOLUME_KEYS[0] || "",
+    limit: 10,
+    cols: 10,
+    reps: 1,
+    trace: 3,
+    grid: "tian",
+    font: "kai",
+    traceStyle: "solid",
+    opacity: 40,
+    rowsPer: 10,
+    pinyin: true,
+    strokes: true,
+    showDemo: true,
+    showGrid: true,
+    padBlank: false,
+    text: ""
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  const MM2PX = (function () {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:absolute;width:1000mm;height:0;visibility:hidden;pointer-events:none";
+    document.body.appendChild(probe);
+    const v = probe.getBoundingClientRect().width / 1000;
+    probe.remove();
+    return v || 3.7795;
+  })();
+
+  /* ---------- 拼音 ---------- */
+  const PY_FIX = {
+    "了": "le", "得": "de", "铺": "pū", "挣": "zhēng", "薄": "bó",
+    "撒": "sǎ", "禁": "jīn", "弹": "dàn", "缝": "féng", "兴": "xīng",
+    "假": "jià", "为": "wèi", "只": "zhī", "觉": "jué", "露": "lù"
+  };
+
+  const pyCache = new Map();
+  function pinyinOf(ch) {
+    if (!/[\u3400-\u9fff]/.test(ch)) return "";
+    if (PY_FIX[ch]) { pyCache.set(ch, PY_FIX[ch]); return PY_FIX[ch]; }
+    if (pyCache.has(ch)) return pyCache.get(ch);
+    let v = "";
+    try {
+      v = window.pinyinPro
+        ? window.pinyinPro.pinyin(ch, { toneType: "symbol", type: "string", pattern: "pinyin", multiple: false })
+        : "";
+    } catch (e) { v = ""; }
+    if (v === ch) v = "";
+    pyCache.set(ch, v);
+    return v;
+  }
+
+  /* ---------- 笔顺 ---------- */
+  const STROKE_PREV = "#8fa3bb";
+  const STROKE_CUR = "#182742";
+  let strokesState = window.STROKE_DATA ? "ready" : "idle";
+  let strokesWaiters = [];
+
+  function loadStrokes(done) {
+    if (strokesState === "ready") { done(); return; }
+    strokesWaiters.push(done);
+    if (strokesState === "loading") return;
+    strokesState = "loading";
+    const s = document.createElement("script");
+    s.src = "data/strokes.js";
+    s.onload = () => {
+      strokesState = window.STROKE_DATA ? "ready" : "fail";
+      strokesWaiters.splice(0).forEach((fn) => fn());
+    };
+    s.onerror = () => {
+      strokesState = "fail";
+      strokesWaiters.splice(0).forEach((fn) => fn());
+    };
+    document.head.appendChild(s);
+  }
+
+  const strokeCache = new Map();
+  function strokeData(ch) {
+    if (!window.STROKE_DATA) return null;
+    if (strokeCache.has(ch)) return strokeCache.get(ch);
+    const d = window.STROKE_DATA[ch] || null;
+    strokeCache.set(ch, d);
+    return d;
+  }
+
+  /* ---------- 格子线 ---------- */
+  const C_MID  = "#a7bdd8";
+  const C_SOFT = "#b7c9de";
+
+  function gridSVG(type) {
+    if (type === "fang") return "";
+    let inner = "";
+
+    if (type === "tian" || type === "mi") {
+      inner += `<line x1="0" y1="50" x2="100" y2="50" stroke="${C_MID}" stroke-width="1.4" stroke-dasharray="3.2 3"/>`;
+      inner += `<line x1="50" y1="0" x2="50" y2="100" stroke="${C_MID}" stroke-width="1.4" stroke-dasharray="3.2 3"/>`;
+    }
+    if (type === "mi") {
+      inner += `<line x1="0" y1="0" x2="100" y2="100" stroke="${C_SOFT}" stroke-width="1.1" stroke-dasharray="2.6 3"/>`;
+      inner += `<line x1="100" y1="0" x2="0" y2="100" stroke="${C_SOFT}" stroke-width="1.1" stroke-dasharray="2.6 3"/>`;
+    }
+    if (type === "jiu") {
+      [33.33, 66.67].forEach((p) => {
+        inner += `<line x1="0" y1="${p}" x2="100" y2="${p}" stroke="${C_SOFT}" stroke-width="1.1"/>`;
+        inner += `<line x1="${p}" y1="0" x2="${p}" y2="100" stroke="${C_SOFT}" stroke-width="1.1"/>`;
+      });
+    }
+    if (type === "hui") {
+      inner += `<rect x="25" y="25" width="50" height="50" fill="none" stroke="${C_SOFT}" stroke-width="1.1"/>`;
+    }
+
+    return `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${inner}</svg>`;
+  }
+
+  /* ---------- 渲染 ---------- */
+  function parseText(raw) {
+    const out = [];
+    const clean = String(raw || "").replace(/[^\u3400-\u4dbf\u4e00-\u9fffA-Za-z0-9]/g, "");
+    for (const ch of clean) {
+      out.push(ch);
+      if (out.length >= 400) break;
+    }
+    return out;
+  }
+
+  function cellHTML(kind, glyph, cellMm) {
+    const fs = (cellMm * 0.74).toFixed(2);
+    const sw = (cellMm * 0.03).toFixed(2);
+    const grid = state.showGrid ? gridSVG(state.grid) : "";
+    const style = `width:${cellMm.toFixed(2)}mm;height:${cellMm.toFixed(2)}mm;--fs:${fs}mm;--sw:${sw}mm`;
+    return `<div class="cell ${kind}" style="${style}">${grid}${glyph ? `<span class="ch">${glyph}</span>` : ""}</div>`;
+  }
+
+  function rowHTML(glyph, cellMm) {
+    const total = state.cols;
+    const demoCount = state.showDemo ? 1 : 0;
+    const traceCount = Math.min(state.trace, Math.max(0, total - demoCount));
+
+    let cells = "";
+    for (let c = 0; c < total; c++) {
+      if (!glyph) { cells += cellHTML("", "", cellMm); continue; }
+      if (c < demoCount) { cells += cellHTML("demo", glyph, cellMm); }
+      else if (c < demoCount + traceCount) { cells += cellHTML("trace", glyph, cellMm); }
+      else { cells += cellHTML("", "", cellMm); }
+    }
+    return `<div class="row">${cells}</div>`;
+  }
+
+  function strokeStripHTML(glyph, cellMm) {
+    const data = strokeData(glyph);
+    if (!data || !data.length) return "";
+
+    const n = data.length;
+    const avail = state.cols * cellMm - cellMm - 1.2;
+    let st = cellMm * 0.235;          // 与拼音同高
+    let gap = Math.max(0.3, st * 0.16);
+    if (n * st + (n - 1) * gap > avail) {
+      gap = 0.25;
+      st = Math.min(st, (avail - (n - 1) * gap) / n);
+    }
+    st = Math.max(1.6, st);
+
+    let boxes = "";
+    for (let k = 1; k <= n; k++) {
+      let paths = "";
+      for (let i = 0; i < k; i++) {
+        paths += `<path d="${data[i]}" fill="${i === k - 1 ? STROKE_CUR : STROKE_PREV}"/>`;
+      }
+      boxes += `<span class="st" style="width:${st.toFixed(2)}mm;height:${st.toFixed(2)}mm">` +
+        `<svg viewBox="0 0 1024 1024" preserveAspectRatio="xMidYMid meet" aria-hidden="true">` +
+        `<g transform="translate(0,900) scale(1,-1)">${paths}</g></svg></span>`;
+    }
+    return `<span class="strokes" style="--st-gap:${gap.toFixed(2)}mm">${boxes}</span>`;
+  }
+
+  function barHTML(glyph, cellMm) {
+    const py = state.pinyin ? pinyinOf(glyph) : "";
+    const strip = state.strokes ? strokeStripHTML(glyph, cellMm) : "";
+    if (!py && !strip) return "";
+    const pyFs = cellMm * 0.235;
+    return `<div class="bar">` +
+      `<span class="py" style="width:${cellMm.toFixed(2)}mm;--py-fs:${pyFs.toFixed(2)}mm">${py}</span>${strip}</div>`;
+  }
+
+  function blockHTML(glyph, cellMm) {
+    let rows = "";
+    for (let r = 0; r < state.reps; r++) rows += rowHTML(glyph, cellMm);
+    return (glyph ? barHTML(glyph, cellMm) : "") + rows;
+  }
+
+  function sheetTitle() {
+    return `每日一练 · ${VOLUMES[state.volume] ? state.volume : "书法练习"}`;
+  }
+
+  function buildShell() {
+    const sec = document.createElement("section");
+    sec.className = "sheet";
+    sec.innerHTML = `
+      <header class="sheet-head">
+        <div class="ttl">${sheetTitle()}</div>
+        <div class="meta">
+          <span>姓名 <i></i></span>
+          <span>日期 <i></i></span>
+        </div>
+      </header>
+      <div class="rows"></div>
+      <footer class="sheet-foot">第 1 页</footer>`;
+    return sec;
+  }
+
+  function render() {
+    const host = $("sheets");
+    host.innerHTML = "";
+
+    let chars = parseText(state.text);
+    $("charCount").textContent = chars.length;
+    if (state.limit > 0) chars = chars.slice(0, state.limit);
+    $("charShown").textContent = chars.length;
+
+    const cellMm = CONTENT_W_MM / state.cols;
+    const hasBar = state.pinyin || state.strokes;
+    const barMm = hasBar ? cellMm * 0.235 + 0.4 : 0;      // 拼音/笔顺条高
+    const overhead = hasBar ? barMm + 0.9 : 0;            // + 块内间距
+    const GAP = 1.2;
+
+    const pages = [];
+    const newPage = () => {
+      const sec = buildShell();
+      host.appendChild(sec);
+      const rows = sec.querySelector(".rows");
+      pages.push(sec);
+      return rows;
+    };
+
+    let rowsEl = newPage();
+    const availMm = rowsEl.clientHeight / MM2PX - 4.5;     // 减去 padding-top
+    const capacity = Math.max(1, Math.floor((availMm + GAP) / (cellMm + overhead + GAP)));
+    const perPage = Math.max(1, Math.min(state.rowsPer, capacity));
+
+    $("cellInfo").textContent = `${cellMm.toFixed(0)}mm · 每页 ${perPage} 行`;
+
+    let used = 0;
+    const add = (html, rows) => {
+      if (used > 0 && used + rows > perPage) { rowsEl = newPage(); used = 0; }
+      const el = document.createElement("div");
+      el.className = "cblock";
+      el.innerHTML = html;
+      rowsEl.appendChild(el);
+      used += rows;
+    };
+
+    if (chars.length) {
+      chars.forEach((ch) => add(blockHTML(ch, cellMm), state.reps));
+    } else {
+      add(blockHTML("", cellMm), 1);
+    }
+
+    if (state.padBlank || !chars.length) {
+      const filler = blockHTML("", cellMm);
+      while (used < perPage) {
+        const el = document.createElement("div");
+        el.className = "cblock";
+        el.innerHTML = filler;
+        rowsEl.appendChild(el);
+        used++;
+      }
+    }
+
+    // 按页把剩余空间均分进行距，页面铺满且不留悬空空行
+    pages.forEach((sec) => {
+      const rows = sec.querySelector(".rows");
+      const kids = [...rows.children];
+      if (kids.length < 2) return;
+      const sum = kids.reduce((a, el) => a + el.getBoundingClientRect().height, 0);
+      const avail = rows.clientHeight - 4.5 * MM2PX;
+      const g = Math.max(1.2, Math.min((avail - sum) / (kids.length - 1) / MM2PX, 12));
+      rows.style.gap = g.toFixed(2) + "mm";
+    });
+
+    const total = pages.length;
+    pages.forEach((sec, k) => {
+      const f = sec.querySelector(".sheet-foot");
+      const head = chars.length ? `${chars.length} 字` : "空白格纸";
+      f.textContent = `${head}　·　共 ${total} 页　·　第 ${k + 1} 页`;
+    });
+  }
+
+  /* ---------- 控件 ---------- */
+  const $volume = $("volume");
+  VOLUME_KEYS.forEach((k) => {
+    const o = document.createElement("option");
+    o.value = k;
+    o.textContent = k;
+    $volume.appendChild(o);
+  });
+  const customOpt = document.createElement("option");
+  customOpt.value = "__custom";
+  customOpt.textContent = "自定义文字";
+  $volume.appendChild(customOpt);
+
+  function applyBodyClasses() {
+    document.body.className = [
+      "font-" + state.font,
+      "style-" + state.traceStyle,
+      state.showGrid ? "" : "no-grid"
+    ].filter(Boolean).join(" ");
+    document.body.style.setProperty("--trace", `rgba(193,68,58,${(state.opacity / 100).toFixed(3)})`);
+  }
+
+  function sync() {
+    state.volume      = $volume.value;
+    state.limit       = parseInt($("limit").value, 10);
+    state.cols        = parseInt($("cols").value, 10);
+    state.reps        = parseInt($("reps").value, 10);
+    state.trace       = parseInt($("trace").value, 10);
+    state.grid        = $("grid").value;
+    state.font        = $("font").value;
+    state.traceStyle  = $("traceStyle").value;
+    state.opacity     = parseInt($("opacity").value, 10);
+    state.rowsPer     = parseInt($("rowsPer").value, 10);
+    state.pinyin      = $("usePinyin").checked;
+    state.strokes     = $("useStrokes").checked;
+    state.showDemo    = $("showDemo").checked;
+    state.showGrid    = $("showGrid").checked;
+    state.padBlank    = $("padBlank").checked;
+
+    $("opacityVal").textContent = state.opacity + "%";
+
+    applyBodyClasses();
+
+    if (state.strokes) loadStrokes(render);
+    else render();
+  }
+
+  /* 册次切换 */
+  let lastCustomText = "";
+  $volume.addEventListener("change", () => {
+    const v = $volume.value;
+    state.volume = v;
+    if (v === "__custom") {
+      $("text").value = lastCustomText;
+    } else {
+      $("text").value = VOLUMES[v] || "";
+      lastCustomText = $("text").value;
+      $("volumeInfo").textContent = `${v} · 全册 ${$("text").value.length} 字`;
+    }
+    state.text = $("text").value;
+    applyBodyClasses();
+    if (state.strokes) loadStrokes(render);
+    else render();
+  });
+
+  /* 文字输入 */
+  let textTimer = null;
+  $("text").addEventListener("input", () => {
+    state.text = $("text").value;
+    lastCustomText = state.text;
+    if ($volume.value !== "__custom") $volume.value = "__custom";
+    $("volumeInfo").textContent = "自定义文字 · 按输入顺序排版";
+    clearTimeout(textTimer);
+    textTimer = setTimeout(render, 220);
+  });
+
+  $("editText").addEventListener("click", () => {
+    const open = $("composer").classList.toggle("open");
+    $("editText").classList.toggle("on", open);
+    if (open) $("text").focus();
+    requestAnimationFrame(render);
+  });
+
+  ["limit", "rowsPer", "cols", "reps", "trace", "grid", "font", "traceStyle", "usePinyin", "useStrokes", "showDemo", "showGrid", "padBlank"]
+    .forEach((id) => $(id).addEventListener("change", sync));
+
+  $("opacity").addEventListener("input", () => {
+    state.opacity = parseInt($("opacity").value, 10);
+    $("opacityVal").textContent = state.opacity + "%";
+    applyBodyClasses();
+  });
+
+  $("print").addEventListener("click", () => window.print());
+
+  let rzTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(rzTimer);
+    rzTimer = setTimeout(render, 150);
+  });
+  window.addEventListener("beforeprint", render);
+
+  /* 初始化 */
+  const first = VOLUME_KEYS[0];
+  if (first) {
+    $volume.value = first;
+    $("text").value = VOLUMES[first];
+    state.text = VOLUMES[first];
+    lastCustomText = state.text;
+    $("volumeInfo").textContent = `${first} · 全册 ${VOLUMES[first].length} 字`;
+  }
+  applyBodyClasses();
+  if (state.strokes) loadStrokes(render);
+  else render();
+})();
+</script>
+</body>
+</html>

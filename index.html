@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>每日一练 · 口算与书法</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #eef2f7;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+  }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 76px 24px 90px;
+  }
+  h1 {
+    font-size: 26px;
+    letter-spacing: .5px;
+    margin: 0 0 10px;
+  }
+  .sub {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.8;
+    margin: 0 0 42px;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+  a.card {
+    display: block;
+    padding: 26px 24px 24px;
+    background: #fff;
+    border-radius: 16px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 6px 24px rgba(15, 23, 42, .06);
+    transition: transform .16s ease, box-shadow .16s ease;
+  }
+  a.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 2px 4px rgba(15, 23, 42, .05), 0 14px 34px rgba(15, 23, 42, .1);
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    color: #2563eb;
+    background: #eaf1fe;
+    border-radius: 6px;
+    padding: 3px 8px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 18px;
+    margin: 0 0 8px;
+    letter-spacing: .3px;
+  }
+  .card p {
+    font-size: 13px;
+    line-height: 1.75;
+    color: #64748b;
+    margin: 0;
+  }
+  .go {
+    margin-top: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+  }
+  footer {
+    margin-top: 56px;
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.9;
+  }
+  @media (max-width: 640px) {
+    main { padding: 48px 18px 64px; }
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>每日一练</h1>
+  <p class="sub">给孩子用的两张练习纸，浏览器里调好参数，直接打印或存 PDF。A4 纸、无边距、不上传任何数据。</p>
+
+  <div class="cards">
+    <a class="card" href="./mul-worksheet/">
+      <span class="tag">口算</span>
+      <h2>乘法竖式练习纸</h2>
+      <p>两位数、三位数乘法竖式。题数、题型、页数可调，方格随列数自动整除，可附答案页。</p>
+      <div class="go">打开 →</div>
+    </a>
+
+    <a class="card" href="./calligraphy/">
+      <span class="tag">书法</span>
+      <h2>书法字帖</h2>
+      <p>统编版 1–6 年级上下册写字表，带拼音与逐笔笔顺。田字格、米字格、九宫格，范字＋描红＋空格三段式。</p>
+      <div class="go">打开 →</div>
+    </a>
+  </div>
+
+  <footer>
+    字帖生字取自统编版（部编版）小学语文写字表，笔顺笔画数据来自 Make Me a Hanzi。
+  </footer>
+</main>
+</body>
+</html>

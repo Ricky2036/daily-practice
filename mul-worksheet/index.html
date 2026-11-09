@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>乘法竖式练习纸 · A4</title>
+<style>
+  @page { size: A4; margin: 0; }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #eef2f7;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ---------- 工具栏 ---------- */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 15px;
+    padding: 11px 20px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .brand {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    margin-right: 4px;
+  }
+  .brand em {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-left: 6px;
+    letter-spacing: .5px;
+  }
+
+  .ctrl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #475569;
+  }
+
+  select, input[type="number"] {
+    height: 30px;
+    padding: 0 8px;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: #0f172a;
+    background: #f8fafc;
+    border: 1px solid #dbe3ec;
+    border-radius: 7px;
+    outline: none;
+    cursor: pointer;
+  }
+  select:focus, input[type="number"]:focus { border-color: #2563eb; background: #fff; }
+  input[type="number"] { width: 52px; text-align: center; }
+
+  /* 滑块控件 */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 76px;
+    height: 22px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: #e3eaf3;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: #2563eb;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, .4);
+  }
+  input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: #e3eaf3;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    border: none;
+    border-radius: 50%;
+    background: #2563eb;
+  }
+  .val {
+    display: inline-block;
+    min-width: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #0f172a;
+  }
+  .sep {
+    width: 1px;
+    height: 18px;
+    background: #e2e8f0;
+    margin: 0 2px;
+  }
+
+  .chk {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #475569;
+    cursor: pointer;
+    user-select: none;
+  }
+  .chk input { width: 14px; height: 14px; accent-color: #2563eb; cursor: pointer; }
+
+  .spacer { flex: 1; }
+
+  button {
+    height: 30px;
+    padding: 0 14px;
+    font-size: 12.5px;
+    font-family: inherit;
+    font-weight: 600;
+    color: #334155;
+    background: #f1f5f9;
+    border: 1px solid #dbe3ec;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: .15s;
+  }
+  button:hover { background: #e6ecf4; }
+  button.primary {
+    color: #fff;
+    background: #2563eb;
+    border-color: #2563eb;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, .3);
+  }
+  button.primary:hover { background: #1d4ed8; }
+
+  /* ---------- 纸张 ---------- */
+  #sheets {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 0 70px;
+  }
+
+  .sheet {
+    width: 210mm;
+    height: 296mm;
+    padding: 13mm 15mm 10mm;
+    background: #fff;
+    box-shadow: 0 2px 18px rgba(15, 23, 42, .13);
+    display: flex;
+    flex-direction: column;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .sheet-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 4mm;
+    border-bottom: 1.2pt solid #0f172a;
+    flex: none;
+  }
+  .ttl {
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+  .meta {
+    display: flex;
+    gap: 8mm;
+    font-size: 10pt;
+    color: #475569;
+    white-space: nowrap;
+  }
+  .meta i {
+    display: inline-block;
+    width: 26mm;
+    height: 1em;
+    border-bottom: .8pt solid #94a3b8;
+    vertical-align: baseline;
+    transform: translateY(.4mm);
+    margin-left: 2px;
+  }
+
+  .problems {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 4.5mm 7mm;
+    padding-top: 5mm;
+  }
+
+  .problem {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .expr {
+    flex: none;
+    font-size: var(--fs);
+    font-weight: 700;
+    letter-spacing: .3px;
+    font-variant-numeric: tabular-nums;
+    font-family: "DIN Alternate", "Helvetica Neue", "PingFang SC", system-ui, sans-serif;
+    padding-bottom: 1.6mm;
+    white-space: nowrap;
+  }
+  .no {
+    display: inline-block;
+    min-width: 7mm;
+    font-size: calc(var(--fs) * .62);
+    font-weight: 600;
+    color: #94a3b8;
+    vertical-align: 2px;
+  }
+
+  .work {
+    flex: 1;
+    min-height: 0;
+    width: var(--area-w, 100%);
+    align-self: center;
+    border: .8pt solid #e6edf6;
+    border-radius: 2mm;
+    background-image:
+      linear-gradient(to right, #f1f6fb .8pt, transparent .8pt),
+      linear-gradient(to bottom, #f1f6fb .8pt, transparent .8pt);
+    background-size: var(--cell) var(--cell);
+    background-position: 0 0;
+    background-origin: padding-box;
+    background-clip: padding-box;
+    background-repeat: repeat;
+  }
+
+  /* 隐藏格子：只留区域边框 */
+  body.no-grid .work {
+    background-image: none;
+    border-color: #d5e0ec;
+  }
+
+  .sheet-foot {
+    flex: none;
+    padding-top: 3mm;
+    font-size: 8.5pt;
+    color: #94a3b8;
+    text-align: center;
+    letter-spacing: .5px;
+  }
+
+  /* ---------- 答案页 ---------- */
+  .sheet.answers .problems {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(var(--ans-rows, 11), auto);
+    grid-auto-flow: column;
+    column-gap: 9mm;
+    row-gap: 1.2mm;
+    align-content: start;
+    padding-top: 7mm;
+  }
+  .ans-item {
+    font-size: 11pt;
+    line-height: 1.95;
+    font-variant-numeric: tabular-nums;
+    font-family: "DIN Alternate", "Helvetica Neue", "PingFang SC", system-ui, sans-serif;
+    color: #1e293b;
+    white-space: nowrap;
+  }
+  .ans-item b { color: #1d4ed8; font-weight: 700; }
+  .ans-item span {
+    display: inline-block;
+    min-width: 5.5mm;
+    color: #94a3b8;
+    font-size: 9pt;
+  }
+
+  /* ---------- 打印 ---------- */
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none !important; }
+    #sheets { padding: 0; gap: 0; }
+    .sheet { box-shadow: none; margin: 0; }
+    .sheet:last-child { page-break-after: auto; break-after: auto; }
+  }
+
+  @media (max-width: 900px) {
+    body { overflow-x: auto; }
+    .toolbar { padding: 10px 16px; }
+    #sheets { align-items: flex-start; padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="brand">乘法竖式练习纸 <em>A4 可打印</em></div>
+
+  <label class="ctrl">每页题数
+    <select id="perPage">
+      <option value="9">9 题</option>
+      <option value="12" selected>12 题</option>
+      <option value="16">16 题</option>
+      <option value="20">20 题</option>
+    </select>
+  </label>
+
+  <label class="ctrl">题型
+    <select id="mode">
+      <option value="22">两位数 × 两位数</option>
+      <option value="23" selected>两位数 × 三位数</option>
+      <option value="33">三位数 × 三位数</option>
+      <option value="mix">混合</option>
+    </select>
+  </label>
+
+  <label class="ctrl">页数
+    <input type="number" id="pages" value="1" min="1" max="10">
+  </label>
+
+  <label class="chk"><input type="checkbox" id="showAns"> 附答案页</label>
+
+  <div class="sep"></div>
+
+  <label class="ctrl">格子
+    <input type="range" id="cellSize" min="3.2" max="9.5" step="0.1" value="6.8">
+    <span class="val" id="cellVal">6.8mm</span>
+  </label>
+
+  <label class="ctrl">宽度
+    <input type="range" id="areaW" min="40" max="100" step="2" value="100">
+    <span class="val" id="areaVal">100%</span>
+  </label>
+
+  <label class="chk"><input type="checkbox" id="showGrid" checked> 显示格子</label>
+
+  <div class="spacer"></div>
+
+  <button id="regen">换一批题</button>
+  <button id="print" class="primary">打印 / 存 PDF</button>
+</div>
+
+<div id="sheets"></div>
+
+<script>
+  const COLS  = { 9: 3, 12: 3, 16: 4, 20: 4 };
+  const CELL_DEFAULT = { 9: 6.1, 12: 6.9, 16: 4.9, 20: 5.6 }; // 各档推荐格距（mm）
+  const FS    = { 1: "20pt", 2: "16pt", 3: "13pt", 4: "11pt" };
+  const CELL  = { 1: "9.5mm", 2: "7.5mm", 3: "6mm", 4: "5.2mm" };
+
+  const state = { perPage: 12, mode: "23", pages: 1, answer: false, cell: null, areaW: 100 };
+
+  const TITLES = {
+    "22":  "两位数乘法竖式练习",
+    "23":  "两位 × 三位数乘法竖式练习",
+    "33":  "三位数乘法竖式练习",
+    "mix": "两位数 · 三位数乘法竖式练习"
+  };
+
+  const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+  function genNum(digits) {
+    const lo = digits === 2 ? 12 : 102;
+    const hi = digits === 2 ? 99 : 999;
+    let n;
+    do { n = rnd(lo, hi); } while (n % 10 === 0);
+    return n;
+  }
+
+  function makePair(mode) {
+    const kind = mode === "mix" ? ["22", "23", "33"][rnd(0, 2)] : mode;
+    let a, b;
+    if (kind === "22")      { a = genNum(2); b = genNum(2); }
+    else if (kind === "23") { a = genNum(2); b = genNum(3); }
+    else                    { a = genNum(3); b = genNum(3); }
+    return a >= b ? [a, b] : [b, a];
+  }
+
+  function buildSheet(probs, idx, total, cols) {
+    const sec = document.createElement("section");
+    sec.className = "sheet";
+    sec.style.setProperty("--cols", cols);
+    sec.style.setProperty("--fs", FS[cols]);
+    sec.style.setProperty("--cell", CELL[cols]);
+
+    const items = probs.map(([a, b], i) => `
+      <div class="problem">
+        <div class="expr"><span class="no">${i + 1}.</span>${a} × ${b} =</div>
+        <div class="work"></div>
+      </div>`).join("");
+
+    sec.innerHTML = `
+      <header class="sheet-head">
+        <div class="ttl">${TITLES[state.mode] || TITLES.mix}</div>
+        <div class="meta">
+          <span>姓名 <i></i></span>
+          <span>日期 <i></i></span>
+        </div>
+      </header>
+      <div class="problems">${items}</div>
+      <footer class="sheet-foot">共 ${total} 页 · 第 ${idx} 页</footer>`;
+    return sec;
+  }
+
+  function buildAnswerSheets(all, totalPages) {
+    const chunk = 60;
+    const out = [];
+    for (let i = 0; i < all.length; i += chunk) {
+      const part = all.slice(i, i + chunk);
+      const sec = document.createElement("section");
+      sec.className = "sheet answers";
+      sec.style.setProperty("--ans-rows", Math.ceil(part.length / 3));
+      const items = part.map(([a, b], j) => {
+        const n = i + j + 1;
+        return `<div class="ans-item"><span>${n}.</span>${a} × ${b} = <b>${a * b}</b></div>`;
+      }).join("");
+      sec.innerHTML = `
+        <header class="sheet-head">
+          <div class="ttl">参考答案</div>
+          <div class="meta"><span>共 ${all.length} 题</span></div>
+        </header>
+        <div class="problems">${items}</div>
+        <footer class="sheet-foot">答案页 · 第 ${Math.floor(i / chunk) + 1} 页</footer>`;
+      out.push(sec);
+    }
+    return out;
+  }
+
+  function render() {
+    const host = document.getElementById("sheets");
+    host.innerHTML = "";
+
+    const cols = COLS[state.perPage] || 2;
+    const all = [];
+
+    for (let p = 0; p < state.pages; p++) {
+      const probs = [];
+      const seen = new Set();
+      let guard = 0;
+      while (probs.length < state.perPage && guard++ < 8000) {
+        const pair = makePair(state.mode);
+        const key = pair[0] + "x" + pair[1];
+        if (seen.has(key)) continue;
+        seen.add(key);
+        probs.push(pair);
+      }
+      all.push(...probs);
+      host.appendChild(buildSheet(probs, p + 1, state.pages, cols));
+    }
+
+    if (state.answer) {
+      buildAnswerSheets(all, state.pages).forEach(el => host.appendChild(el));
+    }
+
+    applyWidth();
+    fitGrids();
+  }
+
+  // ---- 方格自适应：按实际区域尺寸反推格距，保证横竖都是整格 ----
+  const MM2PX = (() => {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:absolute;width:1000mm;height:0;visibility:hidden;pointer-events:none";
+    document.body.appendChild(probe);
+    const v = probe.getBoundingClientRect().width / 1000;
+    probe.remove();
+    return v || 3.7795;
+  })();
+
+  function fitGrids() {
+    const cellMm = state.cell != null
+      ? state.cell
+      : (CELL_DEFAULT[state.perPage] || 6.5);
+    const target = cellMm * MM2PX;
+
+    document.querySelectorAll(".work").forEach(el => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (w < 8 || h < 8) return;
+
+      const cols = Math.max(1, Math.round(w / target));
+      const cw = w / cols;
+      const rows = Math.max(1, Math.round(h / cw));
+      const ch = h / rows;
+
+      el.style.backgroundSize = cw.toFixed(2) + "px " + ch.toFixed(2) + "px";
+      el.dataset.grid = cols + "×" + rows;
+    });
+  }
+
+  function applyWidth() {
+    const v = state.areaW + "%";
+    document.querySelectorAll(".sheet").forEach(s => s.style.setProperty("--area-w", v));
+  }
+
+  let fitTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitGrids, 120);
+  });
+  window.addEventListener("beforeprint", fitGrids);
+
+  // ---- 事件 ----
+  const $perPage = document.getElementById("perPage");
+  const $mode    = document.getElementById("mode");
+  const $pages   = document.getElementById("pages");
+  const $ans     = document.getElementById("showAns");
+  const $cell    = document.getElementById("cellSize");
+  const $cellVal = document.getElementById("cellVal");
+  const $area    = document.getElementById("areaW");
+  const $areaVal = document.getElementById("areaVal");
+
+  function setCellUI(mm) {
+    $cell.value = mm.toFixed(1);
+    $cellVal.textContent = mm.toFixed(1) + "mm";
+  }
+  function setAreaUI(pct) {
+    $area.value = pct;
+    $areaVal.textContent = pct + "%";
+  }
+
+  function sync() {
+    state.perPage = parseInt($perPage.value, 10);
+    state.mode    = $mode.value;
+    state.pages   = Math.min(10, Math.max(1, parseInt($pages.value, 10) || 1));
+    state.answer  = $ans.checked;
+
+    // 切换题数时，格距回到该档推荐值
+    state.cell = null;
+    setCellUI(CELL_DEFAULT[state.perPage] || 6.5);
+
+    $pages.value = state.pages;
+    render();
+  }
+
+  // 拖动格子大小
+  $cell.addEventListener("input", () => {
+    state.cell = parseFloat($cell.value);
+    $cellVal.textContent = state.cell.toFixed(1) + "mm";
+    fitGrids();
+  });
+
+  // 拖动整体宽度
+  $area.addEventListener("input", () => {
+    state.areaW = parseInt($area.value, 10);
+    $areaVal.textContent = state.areaW + "%";
+    applyWidth();
+    fitGrids();
+  });
+
+  // 显示 / 隐藏格子
+  const $grid = document.getElementById("showGrid");
+  function applyGridVisible() {
+    document.body.classList.toggle("no-grid", !$grid.checked);
+  }
+  $grid.addEventListener("change", applyGridVisible);
+
+  $perPage.addEventListener("change", sync);
+  $mode.addEventListener("change", sync);
+  $pages.addEventListener("change", sync);
+  $ans.addEventListener("change", sync);
+  document.getElementById("regen").addEventListener("click", render);
+  document.getElementById("print").addEventListener("click", () => window.print());
+
+  setCellUI(CELL_DEFAULT[state.perPage]);
+  setAreaUI(state.areaW);
+  render();
+</script>
+</body>
+</html>
