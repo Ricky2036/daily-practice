@@ -274,7 +274,7 @@
     gap: .9mm;
   }
 
-  .row { display: flex; flex: none; }
+  .row { display: flex; flex: none; gap: var(--cell-gap, 0mm); }
 
   .cell {
     position: relative;
@@ -284,10 +284,9 @@
     justify-content: center;
     background: #fff;
     border: 1px solid #c6d4e5;
-    margin-right: -1px;
     overflow: hidden;
   }
-  .row .cell:last-child { margin-right: 0; }
+  .sheet.tight .row .cell:not(:last-child) { margin-right: -1px; }
 
   .cell svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
 
@@ -415,6 +414,11 @@
     </select>
   </label>
 
+  <label class="ctrl">格子大小
+    <input type="range" id="cellScale" min="55" max="100" step="1" value="100">
+    <span class="val" id="cellScaleVal">18mm</span>
+  </label>
+
   <label class="ctrl">每字行数
     <select id="reps">
       <option value="1" selected>1 行</option>
@@ -466,7 +470,7 @@
   </label>
 
 
-  <span class="ctrl">字格 <span class="val" id="cellInfo">18mm · 每页 10 行</span></span>
+  <span class="ctrl"><span class="val" id="cellInfo">每页 10 行</span></span>
 
   <label class="chk"><input type="checkbox" id="usePinyin" checked> 拼音</label>
   <label class="chk"><input type="checkbox" id="useStrokes" checked> 笔顺</label>
@@ -515,6 +519,7 @@
     traceStyle: "solid",
     opacity: 40,
     rowsPer: 10,
+    cellScale: 100,
     pinyin: true,
     strokes: true,
     showDemo: true,
@@ -658,7 +663,8 @@
     if (!data || !data.length) return "";
 
     const n = data.length;
-    const avail = state.cols * cellMm - cellMm - 1.2;
+    const rowW = CONTENT_W_MM;
+    const avail = rowW - cellMm - 2;
     let st = cellMm * 0.235;          // 与拼音同高
     let gap = Math.max(0.3, st * 0.16);
     if (n * st + (n - 1) * gap > avail) {
@@ -724,7 +730,9 @@
     if (state.limit > 0) chars = chars.slice(0, state.limit);
     $("charShown").textContent = chars.length;
 
-    const cellMm = CONTENT_W_MM / state.cols;
+    const cellFull = CONTENT_W_MM / state.cols;
+    const cellMm = cellFull * state.cellScale / 100;
+    const gapMm = state.cols > 1 ? (CONTENT_W_MM - state.cols * cellMm) / (state.cols - 1) : 0;
     const hasBar = state.pinyin || state.strokes;
     const barMm = hasBar ? cellMm * 0.235 + 0.4 : 0;      // 拼音/笔顺条高
     const overhead = hasBar ? barMm + 0.9 : 0;            // + 块内间距
@@ -733,6 +741,8 @@
     const pages = [];
     const newPage = () => {
       const sec = buildShell();
+      sec.style.setProperty("--cell-gap", gapMm.toFixed(2) + "mm");
+      if (gapMm < 0.2) sec.classList.add("tight");
       host.appendChild(sec);
       const rows = sec.querySelector(".rows");
       pages.push(sec);
@@ -744,7 +754,9 @@
     const capacity = Math.max(1, Math.floor((availMm + GAP) / (cellMm + overhead + GAP)));
     const perPage = Math.max(1, Math.min(state.rowsPer, capacity));
 
-    $("cellInfo").textContent = `${cellMm.toFixed(0)}mm · 每页 ${perPage} 行`;
+    $("cellScaleVal").textContent = cellMm.toFixed(1).replace(/\.0$/, "") + "mm";
+    $("cellInfo").textContent = `每页 ${perPage} 行` +
+      (gapMm > 0.05 ? ` · 格距 ${gapMm.toFixed(1)}mm` : "");
 
     let used = 0;
     const add = (html, rows) => {
@@ -780,7 +792,7 @@
       if (kids.length < 2) return;
       const sum = kids.reduce((a, el) => a + el.getBoundingClientRect().height, 0);
       const avail = rows.clientHeight - 4.5 * MM2PX;
-      const g = Math.max(1.2, Math.min((avail - sum) / (kids.length - 1) / MM2PX, 12));
+      const g = Math.max(1.2, Math.min((avail - sum) / (kids.length - 1) / MM2PX, 20));
       rows.style.gap = g.toFixed(2) + "mm";
     });
 
@@ -825,6 +837,7 @@
     state.traceStyle  = $("traceStyle").value;
     state.opacity     = parseInt($("opacity").value, 10);
     state.rowsPer     = parseInt($("rowsPer").value, 10);
+    state.cellScale   = parseInt($("cellScale").value, 10);
     state.pinyin      = $("usePinyin").checked;
     state.strokes     = $("useStrokes").checked;
     state.showDemo    = $("showDemo").checked;
@@ -877,6 +890,11 @@
 
   ["limit", "rowsPer", "cols", "reps", "trace", "grid", "font", "traceStyle", "usePinyin", "useStrokes", "showDemo", "showGrid", "padBlank"]
     .forEach((id) => $(id).addEventListener("change", sync));
+
+  $("cellScale").addEventListener("input", () => {
+    state.cellScale = parseInt($("cellScale").value, 10);
+    render();
+  });
 
   $("opacity").addEventListener("input", () => {
     state.opacity = parseInt($("opacity").value, 10);
