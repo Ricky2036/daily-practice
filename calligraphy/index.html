@@ -961,9 +961,8 @@
     $("opacityVal").textContent = state.opacity + "%";
 
     applyBodyClasses();
-
-    if (state.strokes) loadStrokes(render);
-    else render();
+    render();
+    if (state.strokes && strokesState !== "ready") loadStrokes(render);
   }
 
   /* 册次切换 */
@@ -980,8 +979,8 @@
     }
     state.text = $("text").value;
     applyBodyClasses();
-    if (state.strokes) loadStrokes(render);
-    else render();
+    render();
+    if (state.strokes && strokesState !== "ready") loadStrokes(render);
   });
 
   /* 文字输入 */
@@ -1035,8 +1034,8 @@
     $("volumeInfo").textContent = `${first} · 全册 ${VOLUMES[first].length} 字`;
   }
   applyBodyClasses();
+  render();
   if (state.strokes) loadStrokes(render);
-  else render();
 })();
 </script>
 </body>
