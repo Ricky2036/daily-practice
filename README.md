@@ -25,7 +25,7 @@ index.html                 入口页
 mul-worksheet/index.html   乘法竖式
 calligraphy/index.html     书法字帖
 calligraphy/data/          生字表、笔顺笔画（按需加载）
-calligraphy/fonts/         楷体字库子集（霞鹜文楷，OFL 1.1）
+calligraphy/fonts/         楷体字库子集（寒蝉正楷体，OFL 1.1）
 calligraphy/vendor/        pinyin-pro
 ```
 
@@ -33,4 +33,6 @@ calligraphy/vendor/        pinyin-pro
 
 生字表取自统编版（部编版）小学语文写字表；笔顺笔画数据来自 [Make Me a Hanzi](https://github.com/skishore/makemeahanzi)（hanzi-writer-data）；拼音由 [pinyin-pro](https://github.com/zh-lx/pinyin-pro) 生成，多音字按教材读音做了少量修正。
 
-楷体使用 [霞鹜文楷](https://github.com/lxgw/LxgwWenKai) v1.530（SIL Open Font License 1.1），按网页字体用途子集化为 `kai.woff2`，覆盖生字表 2488 字与 GB2312 一级常用字，共 3870 个码位。页面会先用 canvas 测宽探测系统是否装了楷体：装了（macOS / iOS / Windows）就直接用系统楷体、不下载字体；没装（多数 Android）才启用内置字库，避免回退成宋体。授权原文见 `calligraphy/fonts/OFL.txt`。
+楷体使用 [寒蝉正楷体](https://github.com/Warren2060/Chillkai) v2.000（SIL Open Font License 1.1）。它以台湾教育部《全字库正楷体》（即标楷体骨架）为中文底字，简体覆盖完整，字形是规范的印刷楷体，而不是手写感的字体。子集化为 `kai.woff2`，覆盖生字表 2488 字与 GB2312 一级常用字，共 3870 个码位。
+
+页面会先用 canvas 测宽探测系统是否装了楷体：装了（macOS / iOS / Windows：华文楷体 / 楷体-简 / 楷体）就直接用系统楷体、不下载字体；没装（多数 Android）才启用内置字库，避免回退成宋体。授权原文见 `calligraphy/fonts/OFL.txt`。
