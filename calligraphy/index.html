@@ -4,8 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<link rel="preload" href="fonts/kai.woff2" as="font" type="font/woff2" crossorigin>
 <title>每日一练 · 书法字帖 · A4 可打印</title>
+<script>
+  /* 探测系统是否有楷体：没有（如 Android）才启用内置字库，避免无谓的 855KB 下载 */
+  (function () {
+    var has = false;
+    try {
+      var c = document.createElement("canvas").getContext("2d");
+      var probe = "mmmmmmmm";
+      c.font = '40px monospace';
+      var base = c.measureText(probe).width;
+      ["Kaiti SC", "Kaiti TC", "KaiTi", "STKaiti", "BiauKai"].forEach(function (name) {
+        c.font = '40px "' + name + '", monospace';
+        if (Math.abs(c.measureText(probe).width - base) > 0.5) has = true;
+      });
+    } catch (e) { has = false; }
+    window.__HAS_KAI = has;
+    if (!has) document.documentElement.className += " web-kai";
+  })();
+</script>
+
 <style>
   /* 楷体：内置子集字库（霞鹜文楷 v1.530, OFL 1.1），保证手机端也有真楷体 */
   @font-face {
@@ -187,7 +205,7 @@
     min-height: 60px;
     max-height: 190px;
     padding: 8px 11px;
-    font-family: "KaiText", "Kaiti SC", "STKaiti", "KaiTi", "BiauKai", serif;
+    font-family: "Kaiti SC", "Kaiti TC", "STKaiti", "BiauKai", "KaiTi", serif;
     font-size: 17px;
     line-height: 1.85;
     letter-spacing: 2px;
@@ -198,6 +216,7 @@
     outline: none;
     resize: vertical;
   }
+  html.web-kai .composer textarea { font-family: "KaiText", "Kaiti SC", "Kaiti TC", "StKaiti", "KaiTi", serif; }
   .composer textarea:focus { border-color: #2563eb; background: #fff; }
   .composer-side {
     flex: none;
@@ -340,7 +359,8 @@
   .bar .st svg { display: block; width: 100%; height: 100%; }
 
   /* 字体 */
-  body.font-kai      { --font-stack: "KaiText", "Kaiti SC", "STKaiti", "KaiTi", "Kaiti TC", "BiauKai", "Songti SC", serif; }
+  body.font-kai      { --font-stack: "Kaiti SC", "Kaiti TC", "STKaiti", "BiauKai", "KaiTi", "Songti SC", serif; }
+  html.web-kai body.font-kai { --font-stack: "KaiText", "Kaiti SC", "Kaiti TC", "STKaiti", "KaiTi", "Songti SC", serif; }
   body.font-song     { --font-stack: "Songti SC", "STSong", "SimSun", "Songti TC", serif; }
   body.font-hei      { --font-stack: "PingFang SC", "Heiti SC", "Microsoft YaHei", system-ui, sans-serif; }
   body.font-fangson  { --font-stack: "STFangsong", "Fangsong SC", "Songti SC", serif; }
