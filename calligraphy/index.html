@@ -163,6 +163,10 @@
 
   .spacer { flex: 1; }
 
+  /* 辅助参数容器：桌面端不参与布局，等同于没有这一层 */
+  .adv { display: contents; }
+  #toggleCtl { display: none; }
+
   button {
     height: 30px;
     padding: 0 14px;
@@ -389,15 +393,50 @@
   @media print {
     body { background: #fff; }
     .toolbar, .composer { display: none !important; }
+    #sheets { zoom: 1 !important; transform: none !important; }
     #sheets { padding: 0; gap: 0; }
     .sheet { box-shadow: none; margin: 0; }
     .sheet:last-child { page-break-after: auto; break-after: auto; }
   }
 
-  @media (max-width: 900px) {
-    body { overflow-x: auto; }
-    .toolbar { padding: 10px 16px; }
-    #sheets { align-items: flex-start; padding-left: 16px; padding-right: 16px; }
+  @media screen and (max-width: 900px) {
+    body { overflow-x: hidden; }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 12px;
+      padding: 12px 14px;
+      align-items: center;
+    }
+    .toolbar .brand { grid-column: 1 / -1; margin: 0; font-size: 14px; }
+    .toolbar .brand em { display: none; }
+    .toolbar .sep,
+    .toolbar .spacer { display: none; }
+
+    .toolbar > label.ctrl { justify-content: space-between; gap: 8px; }
+    .toolbar > label.ctrl select { flex: 1; min-width: 0; width: auto; margin: 0; }
+    #volume, #limit { max-width: none; }
+
+    #toggleCtl, #print { width: 100%; display: flex; align-items: center; justify-content: center; }
+    #toggleCtl.on { color: #1d4ed8; background: #e8f0fe; border-color: #bcd2fb; }
+
+    .adv { display: none; }
+    .toolbar.expanded .adv {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 12px;
+      padding-top: 12px;
+      border-top: 1px solid #edf1f7;
+    }
+    .adv .ctrl { justify-content: space-between; gap: 8px; }
+    .adv .ctrl select,
+    .adv .ctrl input[type="range"] { flex: 1; min-width: 0; width: auto; }
+    .adv .chk { font-size: 12.5px; }
+    .adv #editText { grid-column: 1 / -1; width: 100%; }
+
+    #sheets { align-items: center; padding: 14px 0 40px; }
   }
 </style>
 </head>
@@ -511,6 +550,7 @@
   <div class="spacer"></div>
 
   <button id="editText">文字内容</button>
+  <button id="toggleCtl">设置</button>
   <button id="print" class="primary">打印 / 存 PDF</button>
 </div>
 
@@ -753,6 +793,7 @@
 
   function render() {
     const host = $("sheets");
+    host.style.zoom = "";          // 测量前先复位，避免缩放影响 mm→px 换算
     host.innerHTML = "";
 
     let chars = parseText(state.text);
@@ -832,7 +873,50 @@
       const head = chars.length ? `${chars.length} 字` : "空白格纸";
       f.textContent = `${head}　·　共 ${total} 页　·　第 ${k + 1} 页`;
     });
+
+    applyZoom();
   }
+
+  /* 手机端：整张 A4 缩放到屏幕内，一眼看全 */
+  const ZOOM_OK = !!(window.CSS && CSS.supports && CSS.supports("zoom", "0.5"));
+
+  function applyZoom() {
+    const host = $("sheets");
+    if (!ZOOM_OK) return;
+    if (window.matchMedia && window.matchMedia("print").matches) { host.style.zoom = ""; return; }
+    const vw = document.documentElement.clientWidth;
+    if (vw > 900) { host.style.zoom = ""; return; }
+    const z = Math.min(1, (vw - 16) / (210 * MM2PX));
+    host.style.zoom = z.toFixed(4);
+  }
+
+  /* ---------- 手机端：次要参数收进「设置」，避免挤成一团 ---------- */
+  (function buildAdvPanel() {
+    const bar = document.querySelector(".toolbar");
+    const sep = bar.querySelector(".sep");
+    const anchor = sep ? sep.nextSibling : document.getElementById("toggleCtl");
+    const adv = document.createElement("div");
+    adv.className = "adv";
+
+    const ids = ["cols", "rowsPer", "cellScale", "reps", "trace", "grid", "font",
+                 "traceStyle", "opacity", "cellInfo", "usePinyin", "useStrokes",
+                 "showDemo", "showGrid", "padBlank", "editText"];
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const host = el.closest(".ctrl, .chk") || el;
+      if (host.parentElement === bar) adv.appendChild(host);
+    });
+    if (sep) adv.insertBefore(sep, adv.firstChild);
+    bar.insertBefore(adv, anchor);
+
+    const toggle = document.getElementById("toggleCtl");
+    toggle.addEventListener("click", () => {
+      const open = bar.classList.toggle("expanded");
+      toggle.textContent = open ? "收起" : "设置";
+      toggle.classList.toggle("on", open);
+    });
+  })();
 
   /* ---------- 控件 ---------- */
   const $volume = $("volume");
